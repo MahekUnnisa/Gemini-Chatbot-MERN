@@ -1,6 +1,28 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../models/User.js";
 import { hash, compare } from "bcrypt";
+import { createToken } from "../utils/token-manager.js";
+import { COOKIE_NAME, DOMAIN } from "../utils/constants.js";
+
+async function setCookie(res, user) {
+  await res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    domain: DOMAIN,
+    signed: true,
+    path: '/',
+  });
+
+  const token = createToken(user._id.toString(), user.email, '30d');
+  const expires = new Date()
+  expires.setDate(expires.getDate() + 30);
+  await res.cookie(COOKIE_NAME, token, {
+    path: "/",
+    domain: DOMAIN,
+    expires,
+    httpOnly: true,
+    signed: true
+  })
+}
 
 export const getAllUsers = async (
   req: Request,
@@ -33,6 +55,9 @@ export const loginUser = async (
     if (!isPasswordCorrect) {
       return res.status(403).json({ message: "Incorrect Password" });
     }
+
+    await setCookie(res, user);
+
     return res.status(200).json({ message: "OK", id: user._id.toString() });
 
   } catch (error) {
@@ -58,6 +83,8 @@ export const signupUser = async (
     const hashedPassword = await hash(password, 10)
     const user = new User({ name, email, password: hashedPassword });
     await user.save();
+
+    await setCookie(res, user);
 
     return res.status(201).json({ message: "OK", id: user._id.toString() });
   } catch (error) {
