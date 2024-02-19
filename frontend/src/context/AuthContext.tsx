@@ -1,4 +1,5 @@
 import { ReactNode, createContext, useContext, useEffect, useState } from 'react'
+import { loginUser, logoutUser, signupUser } from '../helpers/api';
 
 type User = {
     name: string,
@@ -19,14 +20,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => { }, [])
     const login = async (email: string, password: string) => {
-
+        const data = await loginUser(email, password);
+        if (data) {
+            setUser({ email: data.email, name: data.name });
+            setIsLoggedIn(true);
+        }
     }
     const signup = async (name: string, email: string, password: string) => {
-
+        const data = await signupUser(name, email, password);
+        if (data) {
+            setUser({ email: data.email, name: data.name });
+            setIsLoggedIn(true);
+        }
     }
     const logout = async () => {
-
-    }
+        await logoutUser();
+        setIsLoggedIn(false);
+        setUser(null);
+        window.location.reload();
+    };
 
     const value = {
         user,
@@ -36,6 +48,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signup
     }
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+};
+export const useAuth = () => useContext(AuthContext);
 
-export const useAuth = () => useContext(AuthContext)

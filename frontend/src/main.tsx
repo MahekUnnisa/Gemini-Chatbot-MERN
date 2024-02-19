@@ -5,6 +5,12 @@ import './index.css'
 import { ThemeProvider, createTheme } from '@mui/material'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.tsx'
+import axios from 'axios';
+// import { config } from "dotenv";
+// config();
+
+axios.defaults.baseURL = 'http://192.168.135.49:3000/api/v1'
+axios.defaults.withCredentials = true;
 
 const theme = createTheme({ typography: { fontFamily: "Roboto Slab, serif", allVariants: { color: 'white' } } });
 ReactDOM.createRoot(document.getElementById('root')!).render(
